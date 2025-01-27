@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="32" height="32"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="16" cy="16" r="16" fill="#3B82F6"></circle>
+  
+  <!-- Flow Symbol -->
+  <path d="M8 16C8 16 12 10 16 10C20 10 24 16 24 16C24 16 20 22 16 22C12 22 8 16 8 16Z" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"></path>
+  
+  <!-- Central Dot -->
+  <circle cx="16" cy="16" r="3" fill="white"></circle>
+  
+  <!-- Flow Lines -->
+  <path d="M6 16C6 16 11 8 16 8C21 8 26 16 26 16" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"></path>
+  
+  <path d="M6 16C6 16 11 24 16 24C21 24 26 16 26 16" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"></path>
+</svg><style>@media (prefers-color-scheme: light) { :root { filter: none; } }
+@media (prefers-color-scheme: dark) { :root { filter: none; } }
+</style></svg>

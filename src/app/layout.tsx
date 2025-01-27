@@ -25,6 +25,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+      <script
+  defer
+  data-website-id="67979c7215db0f3fb15aa742"
+  data-domain="www.crmflow.io"
+  src="https://datafa.st/js/script.js">
+</script>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

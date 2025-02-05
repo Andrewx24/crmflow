@@ -1,726 +1,372 @@
-// app/demo/page.tsx
+// app/page.tsx
 'use client'
 import { useState } from 'react'
 import { 
-  Mail, Bell, Settings, ArrowUp, ArrowDown, Search,
-  Calendar, Users, BarChart, Phone, MessageSquare, Filter,
-  Plus, ChevronDown, CircleDot
+  Mail, Users, ArrowRight, Check,
+  LineChart, Zap, Shield, Calendar
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent } from "@/components/ui/card"
+import Link from 'next/link'
+import Image from 'next/image'
 
-// Define our data structure types for better TypeScript support
-interface Client {
-  id: number
+// Define types for our data structures
+interface PricingPlan {
   name: string
-  healthScore: number
-  lastContact: string
-  nextFollowUp: string
-  status: 'Healthy' | 'Needs Attention' | 'At Risk'
-  trend: 'up' | 'down' | 'stable'
-  industry: string
-  contactName: string
-  emailHealth: number
-  meetingHealth: number
-  taskHealth: number
-  notes?: string[]
+  price: number
+  features: string[]
 }
 
-interface Task {
-  id: number
+interface PricingPlans {
+  starter: PricingPlan
+  pro: PricingPlan
+  business: PricingPlan
+}
+
+interface Testimonial {
+  quote: string
+  author: string
+  role: string
+  image: string
+}
+
+interface Feature {
+  icon: JSX.Element
   title: string
-  client: string
-  dueDate: string
-  priority: 'high' | 'medium' | 'low'
-  type: 'email' | 'call' | 'meeting' | 'follow-up'
-}
-
-interface Activity {
-  id: number
-  type: 'email' | 'call' | 'meeting' | 'task'
   description: string
-  timestamp: string
-  client: string
-  details?: string
 }
 
-interface Communication {
-  id: number
-  type: 'email' | 'call' | 'meeting'
-  subject: string
-  date: string
-  status: 'completed' | 'scheduled' | 'pending'
-  outcome?: string
-}
-
-// Mock data for our demo
-const mockClients: Client[] = [
-  {
-    id: 1,
-    name: "Acme Corp",
-    healthScore: 92,
-    lastContact: "2 days ago",
-    nextFollowUp: "Tomorrow",
-    status: "Healthy",
-    trend: "up",
-    industry: "Technology",
-    contactName: "John Smith",
-    emailHealth: 95,
-    meetingHealth: 88,
-    taskHealth: 93,
-    notes: ["Client prefers morning meetings", "Q4 review scheduled"]
+// Constants for reusable content
+const PRICING_PLANS: PricingPlans = {
+  starter: {
+    name: 'Starter',
+    price: 29,
+    features: [
+      'Single user',
+      'Up to 100 contacts',
+      'Email tracking',
+      'Basic templates',
+      'Community support'
+    ]
   },
-  {
-    id: 2,
-    name: "TechStart Inc",
-    healthScore: 78,
-    lastContact: "5 days ago",
-    nextFollowUp: "Today",
-    status: "Needs Attention",
-    trend: "down",
-    industry: "Software",
-    contactName: "Sarah Johnson",
-    emailHealth: 75,
-    meetingHealth: 82,
-    taskHealth: 77,
-    notes: ["Following up on new proposal", "Budget review pending"]
+  pro: {
+    name: 'Professional',
+    price: 79,
+    features: [
+      'Up to 3 users',
+      '500 contacts',
+      'Advanced email features',
+      'Team collaboration',
+      'Email support',
+      'Custom workflows'
+    ]
   },
-  {
-    id: 3,
-    name: "Global Services Ltd",
-    healthScore: 65,
-    lastContact: "1 week ago",
-    nextFollowUp: "Next Week",
-    status: "At Risk",
-    trend: "down",
-    industry: "Consulting",
-    contactName: "Mike Wilson",
-    emailHealth: 60,
-    meetingHealth: 70,
-    taskHealth: 65,
-    notes: ["Need to schedule quarterly review", "Contract renewal coming up"]
-  }
-]
-
-const mockTasks: Task[] = [
-  {
-    id: 1,
-    title: "Follow up on project proposal",
-    client: "Acme Corp",
-    dueDate: "Today",
-    priority: "high",
-    type: "email"
-  },
-  {
-    id: 2,
-    title: "Quarterly review meeting",
-    client: "TechStart Inc",
-    dueDate: "Tomorrow",
-    priority: "medium",
-    type: "meeting"
-  },
-  {
-    id: 3,
-    title: "Send contract renewal",
-    client: "Global Services Ltd",
-    dueDate: "Next Week",
-    priority: "high",
-    type: "follow-up"
-  }
-]
-
-const mockActivities: Activity[] = [
-  {
-    id: 1,
-    type: "email",
-    description: "Sent project update to Acme Corp",
-    timestamp: "2 hours ago",
-    client: "Acme Corp",
-    details: "Discussed timeline changes and resource allocation"
-  },
-  {
-    id: 2,
-    type: "call",
-    description: "Sales call with TechStart Inc",
-    timestamp: "4 hours ago",
-    client: "TechStart Inc",
-    details: "Reviewed proposal and pricing structure"
-  },
-  {
-    id: 3,
-    type: "meeting",
-    description: "Strategy meeting with Global Services",
-    timestamp: "Yesterday",
-    client: "Global Services Ltd",
-    details: "Quarterly planning session"
-  }
-]
-
-const mockCommunications: Communication[] = [
-  {
-    id: 1,
-    type: "email",
-    subject: "Project Update",
-    date: "2024-02-04",
-    status: "completed",
-    outcome: "Positive response, meeting scheduled"
-  },
-  {
-    id: 2,
-    type: "call",
-    subject: "Service Review",
-    date: "2024-02-03",
-    status: "completed",
-    outcome: "Client satisfied, follow-up needed in 2 weeks"
-  },
-  {
-    id: 3,
-    type: "meeting",
-    subject: "Quarterly Business Review",
-    date: "2024-02-06",
-    status: "scheduled"
-  }
-]
-
-// Helper functions for UI elements
-const getStatusColor = (status: Client['status']) => {
-  switch (status) {
-    case 'Healthy': return 'bg-green-100 text-green-800'
-    case 'Needs Attention': return 'bg-yellow-100 text-yellow-800'
-    case 'At Risk': return 'bg-red-100 text-red-800'
+  business: {
+    name: 'Business',
+    price: 149,
+    features: [
+      'Up to 7 users',
+      '2,000 contacts',
+      'API access',
+      'White labeling',
+      'Priority support',
+      'Custom integrations'
+    ]
   }
 }
 
-const getPriorityIcon = (type: Activity['type'] | Task['type']) => {
-  switch (type) {
-    case 'email': return <Mail className="h-4 w-4" />
-    case 'call': return <Phone className="h-4 w-4" />
-    case 'meeting': return <Users className="h-4 w-4" />
-    case 'follow-up': return <MessageSquare className="h-4 w-4" />
-    case 'task': return <MessageSquare className="h-4 w-4" />
+const FEATURES: Feature[] = [
+  {
+    icon: <Mail className="h-12 w-12 text-blue-600 mb-4" />,
+    title: 'Email Intelligence',
+    description: 'Track communication patterns, automate follow-ups, and never miss an important client email.'
+  },
+  {
+    icon: <LineChart className="h-12 w-12 text-blue-600 mb-4" />,
+    title: 'Relationship Analytics',
+    description: 'Monitor relationship health with AI-powered insights and proactive alerts.'
+  },
+  {
+    icon: <Users className="h-12 w-12 text-blue-600 mb-4" />,
+    title: 'Team Collaboration',
+    description: 'Keep everyone aligned with shared inboxes, task assignment, and activity tracking.'
+  },
+  {
+    icon: <Zap className="h-12 w-12 text-blue-600 mb-4" />,
+    title: 'Smart Automation',
+    description: 'Automate routine tasks and communications while maintaining a personal touch.'
+  },
+  {
+    icon: <Shield className="h-12 w-12 text-blue-600 mb-4" />,
+    title: 'Data Security',
+    description: 'Enterprise-grade security ensures your client data stays safe and compliant.'
+  },
+  {
+    icon: <Calendar className="h-12 w-12 text-blue-600 mb-4" />,
+    title: 'Smart Scheduling',
+    description: 'Coordinate meetings and follow-ups with automated scheduling and reminders.'
   }
-}
+]
 
-export default function DemoPage() {
-  // State management for our interactive elements
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('all')
-  const [newNote, setNewNote] = useState('')
-
-  // Filter clients based on search and tab selection
-  const filteredClients = mockClients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         client.industry.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesTab = activeTab === 'all' || 
-                      (activeTab === 'healthy' && client.status === 'Healthy') ||
-                      (activeTab === 'needs-attention' && client.status === 'Needs Attention') ||
-                      (activeTab === 'at-risk' && client.status === 'At Risk')
-    return matchesSearch && matchesTab
-  })
+const TESTIMONIALS: Testimonial[] = [
+  {
+    quote: "CRMFlow has transformed how we manage client relationships. The email integration and automated follow-ups have saved us countless hours.",
+    author: "Sarah Johnson",
+    role: "CEO, Design Studio",
+    image: "/api/placeholder/64/64"
+  },
+  {
+    quote: "The relationship analytics help us spot potential issues before they become problems. It's like having an AI-powered account manager.",
+    author: "Michael Chen",
+    role: "Director, Consulting Firm",
+    image: "/api/placeholder/64/64"
+  },
+  {
+    quote: "Finally, a CRM that understands service businesses. The team collaboration features have made our client communication much more effective.",
+    author: "Emma Thompson",
+    role: "Partner, Marketing Agency",
+    image: "/api/placeholder/64/64"
+  }
+]
+export default function HomePage() {
+  // State management for pricing plan selection
+  const [selectedPlan, setSelectedPlan] = useState<keyof PricingPlans>('pro')
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation */}
-      <nav className="bg-white border-b sticky top-0 z-10">
+    <div className="min-h-screen bg-white">
+      {/* Navigation Bar */}
+      <nav className="border-b">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
               <div className="text-2xl font-bold text-blue-600">CRMFlow</div>
-              <div className="hidden md:flex space-x-4">
-                <Button variant="ghost" className="text-gray-600">Dashboard</Button>
-                <Button variant="ghost" className="text-gray-600">Clients</Button>
-                <Button variant="ghost" className="text-gray-600">Tasks</Button>
-                <Button variant="ghost" className="text-gray-600">Reports</Button>
+              <div className="hidden md:flex space-x-6">
+                <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
+                <a href="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
+                <a href="#testimonials" className="text-gray-600 hover:text-gray-900">Testimonials</a>
               </div>
             </div>
-            
             <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                <Bell className="h-4 w-4 mr-2" />
-                <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">3</span>
-              </Button>
-              <Settings className="h-5 w-5 text-gray-500 cursor-pointer" />
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-blue-600">JS</span>
-              </div>
+              <Button variant="ghost">Sign In</Button>
+              <Button>Start Free Trial</Button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="py-6">
+      {/* Hero Section */}
+      <section className="pt-20 pb-16 bg-gradient-to-b from-blue-50 to-white">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Welcome Section */}
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Welcome to CRMFlow</CardTitle>
-                  <p className="text-gray-600 mt-1">
-                    Build stronger client relationships with intelligent automation
-                  </p>
-                </div>
-                <div className="flex space-x-3">
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Client
-                  </Button>
-                  <Button>
-                    <Mail className="h-4 w-4 mr-2" />
-                    Quick Email
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
-          {/* Search and Filter Bar */}
-          <div className="mb-6 flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input 
-                placeholder="Search clients or companies..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-
-          {/* Dashboard Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Client Health Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Client Health</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Healthy (85%)</span>
-                      <span className="text-green-600">24 clients</span>
-                    </div>
-                    <Progress value={85} className="bg-green-100" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Needs Attention (12%)</span>
-                      <span className="text-yellow-600">5 clients</span>
-                    </div>
-                    <Progress value={12} className="bg-yellow-100" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>At Risk (3%)</span>
-                      <span className="text-red-600">1 client</span>
-                    </div>
-                    <Progress value={3} className="bg-red-100" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockActivities.map(activity => (
-                    <div key={activity.id} className="flex items-start">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                        {getPriorityIcon(activity.type)}
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-900">{activity.description}</p>
-                        <p className="text-xs text-gray-500">
-                          {activity.timestamp} · {activity.client}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Upcoming Tasks */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Upcoming Tasks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockTasks.map(task => (
-                    <div key={task.id} 
-                      className="flex items-start p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${
-                        task.priority === 'high' ? 'bg-red-500' : 
-                        task.priority === 'medium' ? 'bg-yellow-500' : 
-                        'bg-green-500'
-                      }`} />
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <p className="text-sm font-medium text-gray-900">{task.title}</p>
-                          {getPriorityIcon(task.type)}
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          {task.client} · {task.dueDate}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Client List */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Client Relationships</CardTitle>
-                <Tabs defaultValue="all" className="w-auto" onValueChange={setActiveTab}>
-                  <TabsList>
-                    <TabsTrigger value="all">All Clients</TabsTrigger>
-                    <TabsTrigger value="healthy">Healthy</TabsTrigger>
-                    <TabsTrigger value="needs-attention">Needs Attention</TabsTrigger>
-                    <TabsTrigger value="at-risk">At Risk</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-
-                </div>
-            </CardHeader>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Client
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Health Score
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Last Contact
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Next Follow-up
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredClients.map(client => (
-                    <tr key={client.id} 
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => setSelectedClient(client)}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {client.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {client.industry}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <span className={`text-sm ${
-                            client.healthScore >= 90 ? 'text-green-600' :
-                            client.healthScore >= 70 ? 'text-yellow-600' :
-                            'text-red-600'
-                          }`}>
-                            {client.healthScore}%
-                          </span>
-                          {client.trend === 'up' ? (
-                            <ArrowUp className="h-4 w-4 text-green-500 ml-1" />
-                          ) : (
-                            <ArrowDown className="h-4 w-4 text-red-500 ml-1" />
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{client.lastContact}</div>
-                        <div className="text-xs text-gray-500">{client.contactName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {client.nextFollowUp}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          getStatusColor(client.status)
-                        }`}>
-                          {client.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filteredClients.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">No clients match your search criteria</p>
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
-      </main>
-
-      {/* Client Details Modal */}
-      {selectedClient && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b sticky top-0 bg-white z-10">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {selectedClient.name}
-                  </h2>
-                  <p className="text-gray-500 mt-1">
-                    {selectedClient.industry} · {selectedClient.contactName}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedClient(null)}
-                  className="h-8 w-8 rounded-full"
-                >
-                  ×
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h1 className="text-5xl font-bold text-gray-900 mb-6">
+              Build Stronger Client Relationships with Intelligent Automation
+            </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              CRMFlow helps service businesses deliver exceptional client experiences through 
+              automated relationship monitoring and streamlined communication.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Button size="lg">
+                Start Free Trial
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Link href="/demo">
+                <Button size="lg" variant="outline">
+                  View Live Demo
                 </Button>
-              </div>
+              </Link>
             </div>
-
-            <div className="p-6">
-              <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="communications">Communications</TabsTrigger>
-                  <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                  <TabsTrigger value="notes">Notes</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="overview">
-                  {/* Health Metrics Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm font-medium">
-                          Email Engagement
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center">
-                          <div className="flex-1">
-                            <Progress 
-                              value={selectedClient.emailHealth}
-                              className="h-2"
-                            />
-                          </div>
-                          <span className="ml-4 text-sm font-medium">
-                            {selectedClient.emailHealth}%
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Based on open rates and response times
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm font-medium">
-                          Meeting Quality
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center">
-                          <div className="flex-1">
-                            <Progress 
-                              value={selectedClient.meetingHealth}
-                              className="h-2"
-                            />
-                          </div>
-                          <span className="ml-4 text-sm font-medium">
-                            {selectedClient.meetingHealth}%
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Based on frequency and follow-through
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm font-medium">
-                          Task Completion
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center">
-                          <div className="flex-1">
-                            <Progress 
-                              value={selectedClient.taskHealth}
-                              className="h-2"
-                            />
-                          </div>
-                          <span className="ml-4 text-sm font-medium">
-                            {selectedClient.taskHealth}%
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Based on deadline adherence
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* AI Insights */}
-                  <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                    <h3 className="text-lg font-semibold mb-3">AI Insights</h3>
-                    <div className="space-y-4">
-                      <div className="flex items-start">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                          <BarChart className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-blue-900">
-                            Communication frequency has decreased
-                          </p>
-                          <p className="text-sm text-blue-700 mt-1">
-                            Engagement is down 20% compared to last month
-                          </p>
-                          <Button size="sm" className="mt-2">
-                            Schedule Check-in
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Actions */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <Button className="w-full">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Send Email
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Schedule Meeting
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <BarChart className="h-4 w-4 mr-2" />
-                      View Reports
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="communications">
-                  <div className="space-y-4">
-                    {mockCommunications.map(comm => (
-                      <Card key={comm.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                              {comm.type === 'email' ? <Mail className="h-4 w-4" /> :
-                               comm.type === 'call' ? <Phone className="h-4 w-4" /> :
-                               <Users className="h-4 w-4" />}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between">
-                                <h4 className="text-sm font-medium">{comm.subject}</h4>
-                                <span className="text-xs text-gray-500">{comm.date}</span>
-                              </div>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {comm.outcome || 'No outcome recorded'}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="tasks">
-                  <div className="space-y-4">
-                    {mockTasks.filter(task => task.client === selectedClient.name).map(task => (
-                      <Card key={task.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start">
-                            <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${
-                              task.priority === 'high' ? 'bg-red-500' :
-                              task.priority === 'medium' ? 'bg-yellow-500' :
-                              'bg-green-500'
-                            }`} />
-                            <div className="flex-1">
-                              <div className="flex justify-between">
-                                <h4 className="text-sm font-medium">{task.title}</h4>
-                                {getPriorityIcon(task.type)}
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Due: {task.dueDate}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    <Button className="w-full" variant="outline">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add New Task
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="notes">
-                  <div className="space-y-4">
-                    {selectedClient.notes?.map((note, index) => (
-                      <Card key={index}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start">
-                            <CircleDot className="h-4 w-4 text-gray-400 mr-2 mt-1" />
-                            <p className="text-sm text-gray-600">{note}</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    <div className="space-y-2">
-                      <Textarea
-                        placeholder="Add a new note..."
-                        value={newNote}
-                        onChange={(e) => setNewNote(e.target.value)}
-                      />
-                      <Button className="w-full">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Note
-                      </Button>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
+          </div>
+          
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-2">94%</div>
+              <div className="text-gray-600">Client Satisfaction</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-2">2.5x</div>
+              <div className="text-gray-600">Faster Response Time</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-2">30%</div>
+              <div className="text-gray-600">More Client Retention</div>
             </div>
           </div>
         </div>
-      )}
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Everything You Need to Manage Client Relationships
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Built specifically for service businesses, CRMFlow combines powerful automation 
+              with intuitive design to help you deliver exceptional client experiences.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {FEATURES.map((feature, index) => (
+              <Card key={index}>
+                <CardContent className="p-6">
+                  {feature.icon}
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-gray-600">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Choose the plan that best fits your business. All plans include our core features 
+              to help you build stronger client relationships.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {(Object.entries(PRICING_PLANS) as [keyof PricingPlans, PricingPlan][]).map(([key, plan]) => (
+              <Card key={key} 
+                className={`${
+                  selectedPlan === key ? 'border-blue-600 shadow-lg' : ''
+                } hover:shadow-lg transition-shadow duration-200`}
+                onClick={() => setSelectedPlan(key)}>
+                <CardContent className="p-6">
+                  <div className="text-xl font-semibold mb-2">{plan.name}</div>
+                  <div className="flex items-end mb-6">
+                    <span className="text-4xl font-bold">${plan.price}</span>
+                    <span className="text-gray-600 ml-2">/month</span>
+                  </div>
+                  <div className="space-y-3">
+                    {plan.features.map((feature, index) => (
+                      <div key={index} className="flex items-center">
+                        <Check className="h-5 w-5 text-green-500 mr-2" />
+                        <span className="text-gray-600">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Button 
+                    className="w-full mt-6" 
+                    variant={selectedPlan === key ? 'default' : 'outline'}>
+                    Get Started
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Trusted by Service Businesses
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              See how CRMFlow helps businesses like yours deliver better client experiences.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {TESTIMONIALS.map((testimonial, index) => (
+              <Card key={index}>
+                <CardContent className="p-6">
+                  <p className="text-gray-600 mb-4 italic">
+                  &apos; {testimonial.quote}&apos;
+                  </p>
+                  <div className="flex items-center">
+                    <Image 
+                      src={testimonial.image}
+                      alt={testimonial.author}
+                      width={48}
+                      height={48}
+                      className="rounded-full mr-4"
+                    />
+                    <div>
+                      <div className="font-semibold">{testimonial.author}</div>
+                      <div className="text-gray-600">{testimonial.role}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="py-20 bg-blue-600">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Ready to Transform Your Client Relationships?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8">
+            Start your 14-day free trial today. No credit card required.
+          </p>
+          <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+            Get Started Now
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="text-2xl font-bold text-white mb-4">CRMFlow</div>
+              <p className="text-gray-400">
+                Building better client relationships through intelligent automation.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Product</h3>
+              <div className="space-y-2">
+                <div>Features</div>
+                <div>Pricing</div>
+                <div>Security</div>
+                <div>Enterprise</div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Company</h3>
+              <div className="space-y-2">
+                <div>About</div>
+                <div>Customers</div>
+                <div>Blog</div>
+                <div>Careers</div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Resources</h3>
+              <div className="space-y-2">
+                <div>Documentation</div>
+                <div>API</div>
+                <div>Guides</div>
+                <div>Support</div>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+            © {new Date().getFullYear()} CRMFlow. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+
 // app/page.tsx
 'use client'
 import { useState } from 'react'
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from 'next/link'
 import Image from 'next/image'
+import { ReactElement } from 'react'
 
 // Define types for our data structures
 interface PricingPlan {
@@ -31,10 +33,44 @@ interface Testimonial {
 }
 
 interface Feature {
-  icon: JSX.Element
+  icon: ReactElement
   title: string
   description: string
 }
+
+// Constants for reusable content
+const FEATURES: Feature[] = [
+  {
+    icon: <Mail className="h-12 w-12 text-blue-600 mb-4" />,
+    title: "Email Intelligence",
+    description: "Track communication patterns, automate follow-ups, and never miss an important client email."
+  },
+  {
+    icon: <LineChart className="h-12 w-12 text-blue-600 mb-4" />,
+    title: "Relationship Analytics",
+    description: "Monitor relationship health with AI-powered insights and proactive alerts."
+  },
+  {
+    icon: <Users className="h-12 w-12 text-blue-600 mb-4" />,
+    title: "Team Collaboration",
+    description: "Keep everyone aligned with shared inboxes, task assignment, and activity tracking."
+  },
+  {
+    icon: <Zap className="h-12 w-12 text-blue-600 mb-4" />,
+    title: "Smart Automation",
+    description: "Automate routine tasks and communications while maintaining a personal touch."
+  },
+  {
+    icon: <Shield className="h-12 w-12 text-blue-600 mb-4" />,
+    title: "Data Security",
+    description: "Enterprise-grade security ensures your client data stays safe and compliant."
+  },
+  {
+    icon: <Calendar className="h-12 w-12 text-blue-600 mb-4" />,
+    title: "Smart Scheduling",
+    description: "Coordinate meetings and follow-ups with automated scheduling and reminders."
+  }
+]
 
 // Constants for reusable content
 const PRICING_PLANS: PricingPlans = {
@@ -75,38 +111,7 @@ const PRICING_PLANS: PricingPlans = {
   }
 }
 
-const FEATURES: Feature[] = [
-  {
-    icon: <Mail className="h-12 w-12 text-blue-600 mb-4" />,
-    title: 'Email Intelligence',
-    description: 'Track communication patterns, automate follow-ups, and never miss an important client email.'
-  },
-  {
-    icon: <LineChart className="h-12 w-12 text-blue-600 mb-4" />,
-    title: 'Relationship Analytics',
-    description: 'Monitor relationship health with AI-powered insights and proactive alerts.'
-  },
-  {
-    icon: <Users className="h-12 w-12 text-blue-600 mb-4" />,
-    title: 'Team Collaboration',
-    description: 'Keep everyone aligned with shared inboxes, task assignment, and activity tracking.'
-  },
-  {
-    icon: <Zap className="h-12 w-12 text-blue-600 mb-4" />,
-    title: 'Smart Automation',
-    description: 'Automate routine tasks and communications while maintaining a personal touch.'
-  },
-  {
-    icon: <Shield className="h-12 w-12 text-blue-600 mb-4" />,
-    title: 'Data Security',
-    description: 'Enterprise-grade security ensures your client data stays safe and compliant.'
-  },
-  {
-    icon: <Calendar className="h-12 w-12 text-blue-600 mb-4" />,
-    title: 'Smart Scheduling',
-    description: 'Coordinate meetings and follow-ups with automated scheduling and reminders.'
-  }
-]
+
 
 const TESTIMONIALS: Testimonial[] = [
   {
